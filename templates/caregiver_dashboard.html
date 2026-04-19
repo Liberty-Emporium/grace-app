@@ -4,14 +4,24 @@
 {% block grace_btn %}{% endblock %}
 {% block content %}
 <div class="page">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-    <div>
-      <div style="font-size:1.3rem;font-weight:900;">🛠️ Caregiver Dashboard</div>
-      <div style="font-size:0.85rem;color:#6b7280;">Managing: {{ name }}</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <a href="/" class="big-btn btn-outline btn-sm" style="width:auto;">👁️ View as {{ name }}</a>
-      <a href="/caregiver/logout" class="big-btn btn-outline btn-sm" style="width:auto;">🔒 Lock</a>
+  <!-- Top bar with logout -->
+  <div style="position:sticky;top:0;z-index:40;background:#1a1a2e;padding:12px 0 14px;
+              margin:-16px -16px 20px;padding:14px 16px;border-bottom:2px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div>
+        <div style="font-size:1.1rem;font-weight:900;">🛠️ Caregiver Dashboard</div>
+        <div style="font-size:0.8rem;color:#6b7280;">Managing: {{ name }}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <a href="/" class="big-btn btn-outline btn-sm" style="width:auto;font-size:0.85rem;">
+          👁️ View App
+        </a>
+        <a href="/caregiver/logout" 
+           style="padding:10px 18px;border-radius:12px;background:#ef4444;color:#fff;
+                  font-weight:800;font-size:0.95rem;text-decoration:none;display:flex;align-items:center;gap:6px;">
+          🔒 LOGOUT
+        </a>
+      </div>
     </div>
   </div>
 

@@ -143,6 +143,10 @@
   <a href="/tasks" class="nav-btn {% if request.path=='/tasks' %}active{% endif %}">
     <span class="nav-icon">✅</span>Tasks
   </a>
+  <a href="{% if session.get('caregiver') %}/caregiver/dashboard{% else %}/caregiver{% endif %}" 
+     class="nav-btn {% if 'caregiver' in request.path %}active{% endif %}">
+    <span class="nav-icon">⚙️</span>{% if session.get('caregiver') %}Settings{% else %}Setup{% endif %}
+  </a>
 </nav>
 {% endblock %}
 
