@@ -1,0 +1,101 @@
+name: Test & Deploy — Grace App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-check:
+    name: Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check syntax
+        run: python3 -c "import ast; ast.parse(open('app.py').read()); print('✅ Syntax OK')"
+
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: syntax-check
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Wait for Railway deploy
+        run: sleep 90
+      - name: Health check with retries
+        run: |
+          for i in {1..8}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://web-production-1015f.up.railway.app/health)
+            BODY=$(curl -s https://web-production-1015f.up.railway.app/health)
+            echo "Attempt $i: HTTP $STATUS — $BODY"
+            if [ "$STATUS" = "200" ]; then echo "✅ Grace is healthy!"; exit 0; fi
+            sleep 15
+          done
+          echo "❌ Grace failed health check"; exit 1
+
+  playwright-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: |
+          pip install playwright pytest pytest-playwright requests -q
+          playwright install chromium --with-deps -q
+      - name: Test Grace
+        run: |
+          cat > test_grace.py << 'EOF'
+          import requests
+          from playwright.sync_api import sync_playwright, expect
+
+          BASE = "https://web-production-1015f.up.railway.app"
+
+          def test_health():
+              r = requests.get(f"{BASE}/health", timeout=15)
+              assert r.status_code == 200
+              assert r.json()["status"] == "ok"
+              assert r.json()["db"] == "ok"
+
+          def test_homepage_has_grace_button():
+              with sync_playwright() as p:
+                  page = p.chromium.launch(headless=True).new_page()
+                  page.goto(BASE)
+                  page.wait_for_load_state("networkidle")
+                  content = page.content()
+                  assert "GRACE" in content.upper() or "grace" in content.lower()
+                  assert page.locator("#graceFab").count() > 0
+
+          def test_meds_page():
+              r = requests.get(f"{BASE}/meds", timeout=15)
+              assert r.status_code == 200
+
+          def test_appointments_page():
+              r = requests.get(f"{BASE}/appointments", timeout=15)
+              assert r.status_code == 200
+
+          def test_tasks_page():
+              r = requests.get(f"{BASE}/tasks", timeout=15)
+              assert r.status_code == 200
+
+          def test_caregiver_page():
+              r = requests.get(f"{BASE}/caregiver", timeout=15)
+              assert r.status_code == 200
+
+          def test_grace_ai_api():
+              r = requests.post(f"{BASE}/api/grace",
+                  json={"message": "Hello, what can you help me with?"},
+                  timeout=20)
+              assert r.status_code == 200
+              data = r.json()
+              assert "reply" in data
+          EOF
+          python3 -m pytest test_grace.py -v --tb=short
