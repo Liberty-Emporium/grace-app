@@ -10,13 +10,18 @@
   </div>
 
   <!-- EMERGENCY CALL BUTTON -->
-  {% if caregiver_phone or caregiver_fb %}
   <div style="margin-bottom:14px;">
     {% if caregiver_phone %}
     <a href="tel:{{ caregiver_phone }}" class="big-btn btn-red"
        style="font-size:1.3rem;padding:22px;box-shadow:0 4px 24px rgba(239,68,68,0.45);margin-bottom:10px;
               display:flex;text-decoration:none;">
       📞 &nbsp; CALL {{ caregiver_name.upper() }}
+    </a>
+    {% else %}
+    <a href="/caregiver" class="big-btn btn-red"
+       style="font-size:1.3rem;padding:22px;box-shadow:0 4px 24px rgba(239,68,68,0.45);margin-bottom:10px;
+              display:flex;text-decoration:none;opacity:0.6;">
+      📞 &nbsp; CALL {{ caregiver_name.upper() }} &nbsp;<span style="font-size:0.8rem;">(tap to set up)</span>
     </a>
     {% endif %}
     {% if caregiver_fb %}
@@ -25,9 +30,14 @@
               box-shadow:0 4px 20px rgba(24,119,242,0.4);display:flex;text-decoration:none;">
       💬 &nbsp; MESSAGE {{ caregiver_name.upper() }}
     </a>
+    {% else %}
+    <a href="/caregiver" class="big-btn"
+       style="font-size:1.15rem;padding:18px;background:#1877f2;color:#fff;
+              box-shadow:0 4px 20px rgba(24,119,242,0.4);display:flex;text-decoration:none;opacity:0.6;">
+      💬 &nbsp; MESSAGE {{ caregiver_name.upper() }} &nbsp;<span style="font-size:0.8rem;">(tap to set up)</span>
+    </a>
     {% endif %}
   </div>
-  {% endif %}
 
   <!-- BIG GRACE BUTTON -->
   <button class="big-btn btn-purple" style="font-size:1.3rem;padding:22px;margin-bottom:20px;
