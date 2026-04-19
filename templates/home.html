@@ -123,9 +123,12 @@
   </div>
   {% endif %}
 
-  <!-- Caregiver link -->
-  <div style="text-align:center;margin-top:24px;padding-bottom:8px;">
-    <a href="/caregiver" style="font-size:0.8rem;color:#4b5563;text-decoration:underline;">Caregiver Settings</a>
+  <!-- Bottom links -->
+  <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin-top:24px;padding-bottom:8px;">
+    <a href="/caregiver" style="font-size:0.85rem;color:#4b5563;text-decoration:underline;">⚙️ Caregiver Settings</a>
+    {% if session.get('caregiver') %}
+    <a href="/caregiver/logout" style="font-size:0.85rem;color:#ef4444;text-decoration:underline;">🔒 Lock Caregiver Mode</a>
+    {% endif %}
   </div>
 
 </div>
