@@ -7,10 +7,10 @@
   <div style="font-size:1.4rem;font-weight:900;margin-bottom:6px;">Caregiver Access</div>
   <div style="font-size:0.95rem;color:#6b7280;margin-bottom:28px;text-align:center;">Enter your PIN to manage settings</div>
 
-  <form method="POST" style="width:100%;max-width:320px;">
+  <form method="POST" style="width:100%;max-width:320px;" id="pinForm">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
       {% for d in ['1','2','3','4','5','6','7','8','9','','0','⌫'] %}
-      <button type="button" onclick="pinKey('{{ d }}')"
+      <button type="button" onclick="pinKey('{{ d }}')" data-digit="{{ d }}"
               style="padding:20px;font-size:1.5rem;font-weight:700;border-radius:14px;
                      background:{% if d=='' %}transparent{% else %}#16213e{% endif %};
                      color:#f1f5f9;border:{% if d=='' %}none{% else %}1.5px solid rgba(255,255,255,0.1){% endif %};
