@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Grace — Medications{% endblock %}
+{% block content %}
+<div class="page">
+  <div style="font-size:1.4rem;font-weight:900;padding:16px 0 20px;">💊 My Medications</div>
+
+  {% if todays %}
+  <div class="card">
+    <div class="card-title">Today's Schedule</div>
+    {% for m in todays %}
+    <div class="med-pill {% if m.taken %}med-taken{% endif %}">
+      <div class="med-dot" style="background:{{ m.med.color }};"></div>
+      <div style="flex:1;">
+        <div class="med-name">{{ m.med.name }}{% if m.med.dose %} — {{ m.med.dose }}{% endif %}</div>
+        <div class="med-time">{{ m.friendly_time }}</div>
+        {% if m.med.notes %}<div class="med-time" style="color:#f59e0b;">📝 {{ m.med.notes }}</div>{% endif %}
+      </div>
+      {% if not m.taken %}
+      <button class="big-btn btn-green btn-sm" style="width:auto;"
+              onclick="takeMedPage({{ m.med.id }}, '{{ m.time }}', this)">✅ Taken</button>
+      {% else %}
+      <span style="font-size:1.5rem;" title="Already taken">✅</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-title">All Medications</div>
+    {% if meds %}
+      {% for med in meds %}
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="width:16px;height:16px;border-radius:50%;background:{{ med.color }};flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:1rem;">{{ med.name }}</div>
+          {% if med.dose %}<div style="font-size:0.85rem;color:#94a3b8;">{{ med.dose }}</div>{% endif %}
+          <div style="font-size:0.82rem;color:#6b7280;">
+            {% set times = med.times | from_json %}
+            {% for t in times %}
+              <span style="background:rgba(124,111,247,0.15);border-radius:8px;padding:2px 8px;margin-right:4px;">
+                {{ t }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:2rem;color:#6b7280;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">💊</div>
+      <div>No medications yet. Ask a caregiver to add them.</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card" style="background:rgba(124,111,247,0.08);border-color:rgba(124,111,247,0.2);">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:8px;">💬 Ask Grace</div>
+    <div style="font-size:0.9rem;color:#94a3b8;margin-bottom:12px;">You can say things like:</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      {% for phrase in ["I took my medication", "What medications do I have today?", "Remind me to take my pill at 3pm"] %}
+      <button class="big-btn btn-outline btn-sm" onclick="quickAsk('{{ phrase }}')" style="justify-content:flex-start;font-size:0.9rem;">
+        "{{ phrase }}"
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function takeMedPage(medId, schedTime, btn){
+  btn.disabled=true; btn.textContent='...';
+  var res = await fetch('/api/med/taken',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({med_id:medId,scheduled_time:schedTime})});
+  var data = await res.json();
+  if(data.ok){ location.reload(); }
+}
+function quickAsk(text){
+  document.getElementById('graceInput').value = text;
+  openGrace();
+  sendGrace();
+}
+</script>
+{% endblock %}

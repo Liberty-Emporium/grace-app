@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Caregiver Dashboard{% endblock %}
+{% block nav %}{% endblock %}
+{% block grace_btn %}{% endblock %}
+{% block content %}
+<div class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div style="font-size:1.3rem;font-weight:900;">🛠️ Caregiver Dashboard</div>
+      <div style="font-size:0.85rem;color:#6b7280;">Managing: {{ name }}</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a href="/" class="big-btn btn-outline btn-sm" style="width:auto;">👁️ View as {{ name }}</a>
+      <a href="/caregiver/logout" class="big-btn btn-outline btn-sm" style="width:auto;">🔒 Lock</a>
+    </div>
+  </div>
+
+  <!-- ── MEDICATIONS ── -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="card-title" style="margin-bottom:0;">💊 Medications</div>
+    </div>
+
+    <!-- Add medication form -->
+    <form method="POST" action="/caregiver/med/add" style="margin-bottom:16px;padding:14px;background:#0f3460;border-radius:12px;">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:10px;color:#94a3b8;">ADD MEDICATION</div>
+      <input type="text" name="name" placeholder="Medication name *" required
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:8px;">
+      <input type="text" name="dose" placeholder="Dose (e.g. 10mg, 1 tablet)"
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:6px;">Times to take (add one per line):</div>
+      <div id="timesList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+        <input type="time" name="times" value="08:00"
+               style="background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <button type="button" onclick="addTimeField()"
+              style="font-size:0.85rem;background:none;color:#7c6ff7;border:none;cursor:pointer;margin-bottom:8px;">
+        + Add another time
+      </button>
+      <input type="text" name="notes" placeholder="Notes (optional)"
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:0.9rem;padding:10px 12px;margin-bottom:10px;">
+      <button type="submit" class="big-btn btn-green btn-sm" style="width:100%;">+ Add Medication</button>
+    </form>
+
+    <!-- Existing meds -->
+    {% for med in meds %}
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#0f3460;border-radius:10px;margin-bottom:6px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:{{ med.color }};flex-shrink:0;"></div>
+      <div style="flex:1;">
+        <div style="font-weight:700;">{{ med.name }}{% if med.dose %} — {{ med.dose }}{% endif %}</div>
+        <div style="font-size:0.8rem;color:#94a3b8;">
+          {% set times = med.times | from_json %}{{ times | join(', ') }}
+        </div>
+      </div>
+      <form method="POST" action="/caregiver/med/delete/{{ med.id }}" onsubmit="return confirm('Remove {{ med.name }}?')">
+        <button type="submit" style="background:rgba(239,68,68,0.15);color:#f87171;border:none;border-radius:8px;padding:6px 12px;font-size:0.85rem;cursor:pointer;">Remove</button>
+      </form>
+    </div>
+    {% else %}
+    <div style="color:#6b7280;font-size:0.9rem;text-align:center;padding:12px;">No medications added yet.</div>
+    {% endfor %}
+  </div>
+
+  <!-- ── APPOINTMENTS ── -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px;">📅 Appointments</div>
+    <form method="POST" action="/caregiver/appointment/add" style="margin-bottom:16px;padding:14px;background:#0f3460;border-radius:12px;">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:10px;color:#94a3b8;">ADD APPOINTMENT</div>
+      <input type="text" name="title" placeholder="Appointment title *" required
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:8px;">
+      <input type="text" name="doctor" placeholder="Doctor / provider name"
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:8px;">
+      <input type="text" name="location" placeholder="Location / address"
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <input type="date" name="appt_date" required
+               style="background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+        <input type="time" name="appt_time" value="09:00"
+               style="background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <select name="remind_min"
+              style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                     color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:10px;">
+        <option value="30">Remind 30 min before</option>
+        <option value="60" selected>Remind 1 hour before</option>
+        <option value="120">Remind 2 hours before</option>
+        <option value="1440">Remind 1 day before</option>
+      </select>
+      <button type="submit" class="big-btn btn-blue btn-sm" style="width:100%;">+ Add Appointment</button>
+    </form>
+
+    {% for a in appts %}
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#0f3460;border-radius:10px;margin-bottom:6px;">
+      <div style="flex:1;">
+        <div style="font-weight:700;">{{ a.title }}</div>
+        <div style="font-size:0.8rem;color:#94a3b8;">{{ friendly_date(a.appt_date) }} at {{ friendly_time(a.appt_time) }}{% if a.doctor %} · {{ a.doctor }}{% endif %}</div>
+      </div>
+      <form method="POST" action="/caregiver/appointment/delete/{{ a.id }}" onsubmit="return confirm('Remove this appointment?')">
+        <button type="submit" style="background:rgba(239,68,68,0.15);color:#f87171;border:none;border-radius:8px;padding:6px 12px;font-size:0.85rem;cursor:pointer;">Remove</button>
+      </form>
+    </div>
+    {% else %}
+    <div style="color:#6b7280;font-size:0.9rem;text-align:center;padding:12px;">No appointments yet.</div>
+    {% endfor %}
+  </div>
+
+  <!-- ── TASKS ── -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px;">✅ Tasks</div>
+    <form method="POST" action="/caregiver/task/add" style="margin-bottom:16px;padding:14px;background:#0f3460;border-radius:12px;">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:10px;color:#94a3b8;">ADD TASK</div>
+      <input type="text" name="title" placeholder="Task description *" required
+             style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                    color:#f1f5f9;font-size:1rem;padding:10px 12px;margin-bottom:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <input type="date" name="due_date"
+               style="background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+        <input type="time" name="due_time"
+               style="background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <button type="submit" class="big-btn btn-yellow btn-sm" style="width:100%;">+ Add Task</button>
+    </form>
+
+    {% for t in tasks %}
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#0f3460;border-radius:10px;margin-bottom:6px;">
+      <div style="flex:1;">
+        <div style="font-weight:700;">{{ t.title }}</div>
+        {% if t.due_date %}<div style="font-size:0.8rem;color:#94a3b8;">{{ t.due_date }}{% if t.due_time %} at {{ t.due_time }}{% endif %}</div>{% endif %}
+      </div>
+      <form method="POST" action="/caregiver/task/delete/{{ t.id }}" onsubmit="return confirm('Remove this task?')">
+        <button type="submit" style="background:rgba(239,68,68,0.15);color:#f87171;border:none;border-radius:8px;padding:6px 12px;font-size:0.85rem;cursor:pointer;">Remove</button>
+      </form>
+    </div>
+    {% else %}
+    <div style="color:#6b7280;font-size:0.9rem;text-align:center;padding:12px;">No tasks yet.</div>
+    {% endfor %}
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px;">⚙️ Settings</div>
+    <form method="POST" action="/caregiver/settings">
+      <div style="margin-bottom:10px;">
+        <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">User's Name</label>
+        <input type="text" name="user_name" value="{{ name }}" placeholder="e.g. Mom"
+               style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">OpenRouter API Key (for Grace AI)</label>
+        <input type="password" name="api_key" placeholder="sk-or-... (leave blank to keep current)"
+               style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">New PIN (min 4 digits)</label>
+        <input type="password" name="new_pin" placeholder="Leave blank to keep current PIN" maxlength="6" pattern="[0-9]*"
+               style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <button type="submit" class="big-btn btn-purple btn-sm" style="width:100%;">Save Settings ✅</button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function addTimeField(){
+  var div = document.createElement('input');
+  div.type='time'; div.name='times'; div.value='12:00';
+  div.style.cssText='background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;color:#f1f5f9;font-size:1rem;padding:10px 12px;';
+  document.getElementById('timesList').appendChild(div);
+}
+</script>
+{% endblock %}

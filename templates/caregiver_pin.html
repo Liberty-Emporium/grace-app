@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Caregiver Access{% endblock %}
+{% block nav %}{% endblock %}
+{% block grace_btn %}{% endblock %}
+{% block content %}
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="font-size:3rem;margin-bottom:16px;">🔐</div>
+  <div style="font-size:1.4rem;font-weight:900;margin-bottom:6px;">Caregiver Access</div>
+  <div style="font-size:0.95rem;color:#6b7280;margin-bottom:28px;text-align:center;">Enter your PIN to manage settings</div>
+
+  <form method="POST" style="width:100%;max-width:320px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+      {% for d in ['1','2','3','4','5','6','7','8','9','','0','⌫'] %}
+      <button type="button" onclick="pinKey('{{ d }}')"
+              style="padding:20px;font-size:1.5rem;font-weight:700;border-radius:14px;
+                     background:{% if d=='' %}transparent{% else %}#16213e{% endif %};
+                     color:#f1f5f9;border:{% if d=='' %}none{% else %}1.5px solid rgba(255,255,255,0.1){% endif %};
+                     cursor:{% if d=='' %}default{% else %}pointer{% endif %};">
+        {{ d }}
+      </button>
+      {% endfor %}
+    </div>
+    <div id="pinDisplay" style="text-align:center;font-size:2rem;letter-spacing:16px;margin-bottom:16px;">····</div>
+    <input type="hidden" name="pin" id="pinInput">
+    <button type="submit" class="big-btn btn-purple" style="font-size:1.1rem;">Enter →</button>
+    <a href="/" class="big-btn btn-outline" style="margin-top:10px;font-size:1rem;">← Back</a>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+var pin='';
+function pinKey(d){
+  if(d===''){ return; }
+  if(d==='⌫'){ pin=pin.slice(0,-1); }
+  else if(pin.length<6){ pin+=d; }
+  updateDisplay();
+}
+function updateDisplay(){
+  document.getElementById('pinInput').value=pin;
+  var dots='';
+  for(var i=0;i<Math.max(4,pin.length);i++) dots+=i<pin.length?'●':'·';
+  document.getElementById('pinDisplay').textContent=dots;
+}
+</script>
+{% endblock %}

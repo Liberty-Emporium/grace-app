@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Grace — Tasks{% endblock %}
+{% block content %}
+<div class="page">
+  <div style="font-size:1.4rem;font-weight:900;padding:16px 0 20px;">✅ My Tasks</div>
+
+  {% if tasks %}
+    {% for t in tasks %}
+    <div class="task-item" id="task-{{ t.id }}">
+      <div class="task-check" onclick="doneTask({{ t.id }}, this)" style="width:40px;height:40px;">
+        <span style="font-size:1.4rem;display:none;color:#fff;">✓</span>
+      </div>
+      <div style="flex:1;">
+        <div class="task-title" style="font-size:1.05rem;">{{ t.title }}</div>
+        {% if t.due_date or t.due_time %}
+        <div style="font-size:0.83rem;color:#94a3b8;margin-top:3px;">
+          {% if t.due_date %}📅 {{ t.due_date }}{% endif %}
+          {% if t.due_time %}🕐 {{ t.due_time }}{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div style="text-align:center;padding:3rem 1rem;color:#6b7280;">
+    <div style="font-size:4rem;margin-bottom:12px;">✅</div>
+    <div style="font-size:1.1rem;font-weight:700;color:#94a3b8;margin-bottom:8px;">No tasks right now!</div>
+    <div style="font-size:0.9rem;">Ask Grace to add something.</div>
+  </div>
+  {% endif %}
+
+  <div class="card" style="margin-top:8px;background:rgba(124,111,247,0.08);border-color:rgba(124,111,247,0.2);">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:12px;">💬 Ask Grace to add a task</div>
+    {% for phrase in ["Add a task", "Remind me to call the doctor", "Add task: buy groceries tomorrow"] %}
+    <button class="big-btn btn-outline btn-sm" style="margin-bottom:8px;justify-content:flex-start;font-size:0.9rem;"
+            onclick="quickAsk('{{ phrase }}')">
+      "{{ phrase }}"
+    </button>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function doneTask(taskId, checkEl){
+  checkEl.classList.add('done');
+  checkEl.querySelector('span').style.display='block';
+  var res = await fetch('/api/task/done',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({task_id:taskId})});
+  var data = await res.json();
+  if(data.ok){
+    var item = document.getElementById('task-'+taskId);
+    setTimeout(function(){item.style.opacity='0.3';item.style.transition='opacity .4s';},200);
+    if(data.message) speakText(data.message);
+  }
+}
+function quickAsk(text){
+  document.getElementById('graceInput').value=text;
+  openGrace(); sendGrace();
+}
+</script>
+{% endblock %}

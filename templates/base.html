@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>{% block title %}Grace{% endblock %}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --bg:#1a1a2e;--card:#16213e;--card2:#0f3460;
+      --purple:#7c6ff7;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;
+      --text:#f1f5f9;--muted:#94a3b8;--border:rgba(255,255,255,0.1);
+    }
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:20px;line-height:1.5;}
+    a{color:inherit;text-decoration:none;}
+    button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+
+    /* Flash messages */
+    .flash{padding:14px 18px;border-radius:12px;margin:12px 16px;font-size:1rem;font-weight:600;}
+    .flash.success{background:rgba(16,185,129,0.15);border:2px solid rgba(16,185,129,0.4);color:#6ee7b7;}
+    .flash.error{background:rgba(239,68,68,0.15);border:2px solid rgba(239,68,68,0.4);color:#fca5a5;}
+
+    /* Bottom nav */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);
+                border-top:2px solid var(--border);display:flex;z-index:50;
+                padding-bottom:env(safe-area-inset-bottom);}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+             padding:12px 6px;font-size:0.7rem;font-weight:700;color:var(--muted);
+             text-transform:uppercase;letter-spacing:.04em;gap:4px;transition:color .15s;}
+    .nav-btn.active,.nav-btn:hover{color:var(--purple);}
+    .nav-icon{font-size:1.6rem;line-height:1;}
+    .page{padding:16px 16px 100px;}
+
+    /* Cards */
+    .card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;}
+    .card-title{font-size:1rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+
+    /* Big buttons */
+    .big-btn{display:flex;align-items:center;justify-content:center;gap:10px;
+             padding:18px 24px;border-radius:16px;font-size:1.15rem;font-weight:800;
+             width:100%;transition:transform .1s,opacity .1s;}
+    .big-btn:active{transform:scale(0.97);opacity:0.85;}
+    .btn-green{background:var(--green);color:#fff;}
+    .btn-purple{background:var(--purple);color:#fff;}
+    .btn-yellow{background:var(--yellow);color:#000;}
+    .btn-red{background:var(--red);color:#fff;}
+    .btn-blue{background:var(--blue);color:#fff;}
+    .btn-outline{background:transparent;color:var(--text);border:2px solid var(--border);}
+    .btn-sm{padding:10px 16px;font-size:0.9rem;border-radius:10px;}
+
+    /* Med pill */
+    .med-pill{display:flex;align-items:center;gap:14px;padding:14px;
+              background:var(--card2);border-radius:14px;margin-bottom:10px;}
+    .med-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+    .med-name{font-size:1.05rem;font-weight:700;flex:1;}
+    .med-time{font-size:0.85rem;color:var(--muted);}
+    .med-taken{opacity:0.45;}
+
+    /* Appointment card */
+    .appt-card{padding:14px;background:var(--card2);border-radius:14px;margin-bottom:10px;border-left:4px solid var(--blue);}
+    .appt-title{font-size:1.05rem;font-weight:700;}
+    .appt-detail{font-size:0.85rem;color:var(--muted);margin-top:3px;}
+
+    /* Task */
+    .task-item{display:flex;align-items:center;gap:14px;padding:14px;
+               background:var(--card2);border-radius:14px;margin-bottom:10px;}
+    .task-check{width:32px;height:32px;border-radius:50%;border:3px solid var(--purple);
+                flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;}
+    .task-check.done{background:var(--green);border-color:var(--green);}
+    .task-title{font-size:1rem;font-weight:600;flex:1;}
+
+    /* Grace button */
+    .grace-fab{position:fixed;bottom:80px;right:16px;width:70px;height:70px;
+               border-radius:50%;background:var(--purple);box-shadow:0 4px 20px rgba(124,111,247,0.5);
+               display:flex;align-items:center;justify-content:center;font-size:1.8rem;
+               z-index:60;transition:transform .1s;cursor:pointer;border:none;}
+    .grace-fab:active{transform:scale(0.93);}
+    .grace-fab.listening{background:var(--red);animation:pulse 1s infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(239,68,68,0.5);}50%{box-shadow:0 4px 40px rgba(239,68,68,0.8);}}
+
+    /* Grace chat panel */
+    .grace-panel{position:fixed;bottom:0;left:0;right:0;background:var(--card);
+                 border-top:2px solid var(--purple);border-radius:24px 24px 0 0;
+                 padding:20px 16px 24px;z-index:70;transform:translateY(100%);
+                 transition:transform .3s ease;max-height:75vh;overflow-y:auto;}
+    .grace-panel.open{transform:translateY(0);}
+    .grace-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .grace-title{font-size:1.1rem;font-weight:800;color:var(--purple);}
+    .grace-close{background:none;color:var(--muted);font-size:1.5rem;padding:4px;}
+    .grace-bubble{padding:12px 16px;border-radius:14px;margin-bottom:10px;font-size:1rem;line-height:1.5;}
+    .grace-bubble.grace{background:rgba(124,111,247,0.15);border:1px solid rgba(124,111,247,0.3);color:var(--text);}
+    .grace-bubble.user{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:var(--text);text-align:right;}
+    .grace-input-row{display:flex;gap:10px;margin-top:12px;}
+    .grace-input{flex:1;background:var(--card2);border:2px solid var(--border);border-radius:12px;
+                 color:var(--text);font-size:1rem;padding:12px 14px;outline:none;font-family:inherit;}
+    .grace-input:focus{border-color:var(--purple);}
+    .grace-voice-btn{width:52px;height:52px;border-radius:50%;background:var(--purple);
+                     color:#fff;font-size:1.3rem;flex-shrink:0;border:none;cursor:pointer;}
+    .grace-voice-btn.listening{background:var(--red);}
+    .grace-send-btn{padding:0 18px;border-radius:12px;background:var(--green);color:#fff;
+                    font-size:1rem;font-weight:700;border:none;cursor:pointer;}
+
+    /* Alert overlay */
+    .alert-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:200;
+                   display:flex;flex-direction:column;align-items:center;justify-content:center;
+                   padding:24px;text-align:center;display:none;}
+    .alert-overlay.show{display:flex;}
+    .alert-icon{font-size:5rem;margin-bottom:16px;animation:bounce2 1s infinite;}
+    @keyframes bounce2{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+    .alert-title{font-size:1.8rem;font-weight:900;margin-bottom:8px;}
+    .alert-msg{font-size:1.2rem;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+    .alert-action-btn{font-size:1.4rem;font-weight:900;padding:20px 40px;border-radius:20px;
+                      border:none;cursor:pointer;width:100%;max-width:340px;transition:transform .1s;}
+    .alert-action-btn:active{transform:scale(0.97);}
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for cat,msg in messages %}
+    <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<!-- Bottom navigation -->
+{% block nav %}
+<nav class="bottom-nav">
+  <a href="/" class="nav-btn {% if request.path=='/' %}active{% endif %}">
+    <span class="nav-icon">🏠</span>Home
+  </a>
+  <a href="/meds" class="nav-btn {% if request.path=='/meds' %}active{% endif %}">
+    <span class="nav-icon">💊</span>Meds
+  </a>
+  <a href="/appointments" class="nav-btn {% if '/appoint' in request.path %}active{% endif %}">
+    <span class="nav-icon">📅</span>Calendar
+  </a>
+  <a href="/tasks" class="nav-btn {% if request.path=='/tasks' %}active{% endif %}">
+    <span class="nav-icon">✅</span>Tasks
+  </a>
+</nav>
+{% endblock %}
+
+<!-- Grace FAB button -->
+{% block grace_btn %}
+<button class="grace-fab" id="graceFab" onclick="toggleGrace()" title="Talk to Grace">🎙️</button>
+{% endblock %}
+
+<!-- Grace Chat Panel -->
+<div class="grace-panel" id="gracePanel">
+  <div class="grace-panel-header">
+    <span class="grace-title">💜 Grace — I'm here to help!</span>
+    <button class="grace-close" onclick="closeGrace()">✕</button>
+  </div>
+  <div id="graceMessages">
+    <div class="grace-bubble grace">Hi! I'm Grace. 😊 I can help you check your medications, appointments, and tasks — or just answer questions. What do you need?</div>
+  </div>
+  <div class="grace-input-row">
+    <button class="grace-voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Speak to Grace">🎙️</button>
+    <input type="text" class="grace-input" id="graceInput" placeholder="Type or tap mic to speak…" maxlength="500"
+           onkeydown="if(event.key==='Enter'){sendGrace();}">
+    <button class="grace-send-btn" onclick="sendGrace()">Send</button>
+  </div>
+</div>
+
+<!-- Alert overlay (for reminders) -->
+<div class="alert-overlay" id="alertOverlay">
+  <div class="alert-icon" id="alertIcon">⏰</div>
+  <div class="alert-title" id="alertTitle">Reminder</div>
+  <div class="alert-msg" id="alertMsg"></div>
+  <button class="alert-action-btn" id="alertBtn" style="background:var(--green);color:#fff;"
+          onclick="dismissAlert()">OK ✅</button>
+</div>
+
+<script>
+// ── Grace Panel ──────────────────────────────────────────────────────────────
+function toggleGrace(){
+  var p = document.getElementById('gracePanel');
+  p.classList.contains('open') ? closeGrace() : openGrace();
+}
+function openGrace(){
+  document.getElementById('gracePanel').classList.add('open');
+  document.getElementById('graceInput').focus();
+}
+function closeGrace(){
+  document.getElementById('gracePanel').classList.remove('open');
+  stopVoice();
+}
+
+async function sendGrace(){
+  var input = document.getElementById('graceInput');
+  var msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  addGraceMsg('user', msg);
+  addGraceMsg('grace', '...');
+  try {
+    var res = await fetch('/api/grace', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    var data = await res.json();
+    removeLastGrace();
+    addGraceMsg('grace', data.reply);
+    if(data.speak && 'speechSynthesis' in window) speakText(data.speak);
+    if(data.actions && data.actions.length) setTimeout(()=>location.reload(), 1500);
+  } catch(e){
+    removeLastGrace();
+    addGraceMsg('grace', "I'm sorry, I had trouble with that. Please try again. 💙");
+  }
+}
+
+function addGraceMsg(role, text){
+  var div = document.createElement('div');
+  div.className = 'grace-bubble ' + role;
+  div.textContent = text;
+  div.id = role === 'grace' ? 'last-grace' : '';
+  document.getElementById('graceMessages').appendChild(div);
+  div.scrollIntoView({behavior:'smooth'});
+}
+function removeLastGrace(){
+  var el = document.getElementById('last-grace');
+  if(el) el.remove();
+}
+
+// ── Voice Input ──────────────────────────────────────────────────────────────
+var recognition = null;
+var listening = false;
+
+function toggleVoice(){
+  listening ? stopVoice() : startVoice();
+}
+
+function startVoice(){
+  if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+    addGraceMsg('grace', "Voice isn't available on this device. Please type your question.");
+    return;
+  }
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onstart = function(){
+    listening = true;
+    document.getElementById('voiceBtn').classList.add('listening');
+    document.getElementById('voiceBtn').textContent = '⏹️';
+    document.getElementById('graceFab').classList.add('listening');
+    document.getElementById('graceInput').placeholder = 'Listening…';
+    openGrace();
+  };
+  recognition.onresult = function(e){
+    var text = e.results[0][0].transcript;
+    document.getElementById('graceInput').value = text;
+    stopVoice();
+    sendGrace();
+  };
+  recognition.onerror = function(){
+    stopVoice();
+    addGraceMsg('grace', "I didn't catch that. Could you try again or type your question?");
+  };
+  recognition.onend = function(){ stopVoice(); };
+  recognition.start();
+}
+
+function stopVoice(){
+  if(recognition){ try{recognition.stop();}catch(e){} }
+  listening = false;
+  var vb = document.getElementById('voiceBtn');
+  var fab = document.getElementById('graceFab');
+  if(vb){ vb.classList.remove('listening'); vb.textContent = '🎙️'; }
+  if(fab){ fab.classList.remove('listening'); }
+  var inp = document.getElementById('graceInput');
+  if(inp) inp.placeholder = 'Type or tap mic to speak…';
+}
+
+// ── Text to Speech ───────────────────────────────────────────────────────────
+function speakText(text){
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.88;
+  utt.pitch = 1.05;
+  window.speechSynthesis.speak(utt);
+}
+
+// ── Reminder polling ─────────────────────────────────────────────────────────
+var currentReminderId = null;
+function checkReminders(){
+  fetch('/api/reminders/due').then(r=>r.json()).then(function(data){
+    if(data.reminders && data.reminders.length > 0){
+      showAlert(data.reminders[0]);
+    }
+  }).catch(function(){});
+}
+function showAlert(reminder){
+  currentReminderId = reminder.id;
+  var icon = reminder.type === 'medication' ? '💊' : (reminder.type === 'appointment' ? '📅' : '⏰');
+  document.getElementById('alertIcon').textContent = icon;
+  document.getElementById('alertTitle').textContent = reminder.type === 'medication' ? 'Time for your medication!' : 'Reminder!';
+  document.getElementById('alertMsg').textContent = reminder.message;
+  document.getElementById('alertOverlay').classList.add('show');
+  speakText(reminder.message);
+  // Play sound
+  try {
+    var ctx = new AudioContext();
+    for(var i=0;i<3;i++){
+      setTimeout((function(idx){ return function(){
+        var o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 880; g.gain.setValueAtTime(0.3,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);
+        o.start(); o.stop(ctx.currentTime+0.5);
+      };})(i), i*700);
+    }
+  } catch(e){}
+}
+function dismissAlert(){
+  if(currentReminderId){
+    fetch('/api/reminder/dismiss',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({reminder_id:currentReminderId})});
+  }
+  document.getElementById('alertOverlay').classList.remove('show');
+  currentReminderId = null;
+}
+// Check every 60 seconds
+setInterval(checkReminders, 60000);
+setTimeout(checkReminders, 3000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
