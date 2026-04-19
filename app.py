@@ -105,6 +105,9 @@ def init_db():
         'large_text': '1',
         'reminder_sound': '1',
         'caregiver_pin': CAREGIVER_PIN,
+        'caregiver_name': 'Jay',
+        'caregiver_phone': '',
+        'caregiver_fb_username': '',
     }
     for k, v in defaults.items():
         db.execute('INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)', (k, v))
@@ -390,11 +393,16 @@ def home():
     elif hour < 17: greeting = f"Good afternoon, {name}! 🌤️"
     else:           greeting = f"Good evening, {name}! 🌙"
 
+    caregiver_name = get_setting('caregiver_name', 'Jay')
+    caregiver_phone = get_setting('caregiver_phone', '')
+    caregiver_fb = get_setting('caregiver_fb_username', '')
+
     return render_template('home.html',
         meds=meds, appts=appts, tasks=tasks,
         upcoming=upcoming, reminders=reminders,
         greeting=greeting, today=friendly_date(today_str()),
-        name=name
+        name=name, caregiver_name=caregiver_name,
+        caregiver_phone=caregiver_phone, caregiver_fb=caregiver_fb
     )
 
 @app.route('/meds')
@@ -551,7 +559,10 @@ def caregiver_dashboard():
     return render_template('caregiver_dashboard.html',
         meds=meds, appts=[dict(a) for a in appts],
         tasks=[dict(t) for t in tasks], name=name,
-        friendly_date=friendly_date, friendly_time=friendly_time)
+        friendly_date=friendly_date, friendly_time=friendly_time,
+        caregiver_name=get_setting('caregiver_name', 'Jay'),
+        caregiver_phone=get_setting('caregiver_phone', ''),
+        caregiver_fb=get_setting('caregiver_fb_username', ''))
 
 @app.route('/caregiver/logout')
 def caregiver_logout():
@@ -666,6 +677,15 @@ def caregiver_settings():
     if api_key:
         db.execute('INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)', ('openrouter_key', api_key))
         os.environ['OPENROUTER_API_KEY'] = api_key
+    caregiver_name = request.form.get('caregiver_name', '').strip()
+    caregiver_phone = request.form.get('caregiver_phone', '').strip()
+    caregiver_fb = request.form.get('caregiver_fb_username', '').strip()
+    if caregiver_name:
+        db.execute('INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)', ('caregiver_name', caregiver_name))
+    if caregiver_phone:
+        db.execute('INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)', ('caregiver_phone', caregiver_phone))
+    if caregiver_fb:
+        db.execute('INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)', ('caregiver_fb_username', caregiver_fb))
     db.commit()
     flash('Settings saved! ✅', 'success')
     return redirect(url_for('caregiver_dashboard'))

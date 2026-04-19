@@ -158,6 +158,26 @@
                       color:#f1f5f9;font-size:1rem;padding:10px 12px;">
       </div>
       <div style="margin-bottom:10px;">
+        <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">Your Name (shown on call button)</label>
+        <input type="text" name="caregiver_name" value="{{ caregiver_name|default('Jay') }}" placeholder="e.g. Jay"
+               style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">📞 Your Phone Number</label>
+        <input type="tel" name="caregiver_phone" value="{{ caregiver_phone|default('') }}" placeholder="e.g. +1 555-123-4567"
+               style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+        <p style="font-size:0.75rem;color:#6b7280;margin-top:4px;">Mom can tap to call you directly</p>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">💬 Facebook Username</label>
+        <input type="text" name="caregiver_fb_username" value="{{ caregiver_fb|default('') }}" placeholder="e.g. jay.alexander (your FB username)"
+               style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
+                      color:#f1f5f9;font-size:1rem;padding:10px 12px;">
+        <p style="font-size:0.75rem;color:#6b7280;margin-top:4px;">Opens Messenger directly to you — find yours at facebook.com/[username]</p>
+      </div>
+      <div style="margin-bottom:10px;">
         <label style="font-size:0.85rem;color:#94a3b8;display:block;margin-bottom:5px;">OpenRouter API Key (for Grace AI)</label>
         <input type="password" name="api_key" placeholder="sk-or-... (leave blank to keep current)"
                style="width:100%;background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;
