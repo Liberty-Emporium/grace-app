@@ -45,7 +45,7 @@ def init_db():
             photo_url   TEXT DEFAULT '',
             active      INTEGER DEFAULT 1,
             notes       TEXT DEFAULT '',
-            created     TEXT DEFAULT (datetime("now"))
+            created     TEXT DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS med_logs (
             id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,7 +66,7 @@ def init_db():
             notes       TEXT DEFAULT '',
             remind_min  INTEGER DEFAULT 60,
             done        INTEGER DEFAULT 0,
-            created     TEXT DEFAULT (datetime("now"))
+            created     TEXT DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS tasks (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +75,7 @@ def init_db():
             due_time    TEXT DEFAULT '',
             done        INTEGER DEFAULT 0,
             remind      INTEGER DEFAULT 1,
-            created     TEXT DEFAULT (datetime("now"))
+            created     TEXT DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS reminders (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,13 +84,13 @@ def init_db():
             message     TEXT NOT NULL,
             fire_at     TEXT NOT NULL,
             fired       INTEGER DEFAULT 0,
-            created     TEXT DEFAULT (datetime("now"))
+            created     TEXT DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS chat_history (
             id      INTEGER PRIMARY KEY AUTOINCREMENT,
             role    TEXT NOT NULL,
             content TEXT NOT NULL,
-            ts      TEXT DEFAULT (datetime("now"))
+            ts      TEXT DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS settings (
             key   TEXT PRIMARY KEY,
