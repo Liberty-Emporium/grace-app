@@ -29,8 +29,8 @@ jobs:
       - name: Health check with retries
         run: |
           for i in {1..8}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://web-production-1015f.up.railway.app/health)
-            BODY=$(curl -s https://web-production-1015f.up.railway.app/health)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://moms-ai-helper.up.railway.app/health)
+            BODY=$(curl -s https://moms-ai-helper.up.railway.app/health)
             echo "Attempt $i: HTTP $STATUS — $BODY"
             if [ "$STATUS" = "200" ]; then echo "✅ Grace is healthy!"; exit 0; fi
             sleep 15
@@ -57,7 +57,7 @@ jobs:
           import requests
           from playwright.sync_api import sync_playwright, expect
 
-          BASE = "https://web-production-1015f.up.railway.app"
+          BASE = "https://moms-ai-helper.up.railway.app"
 
           def test_health():
               r = requests.get(f"{BASE}/health", timeout=15)
